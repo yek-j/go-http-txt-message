@@ -3,11 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
+	"time"
 )
 
 type Message struct {
@@ -20,10 +20,6 @@ type Message struct {
 var specialCharPattern = regexp.MustCompile(`[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>?]+`)
 
 func Send(w http.ResponseWriter, r *http.Request) {
-	
-	
-	fmt.Fprintf(w, "Send Handler")
-
 	var msg Message
 	err := json.NewDecoder(r.Body).Decode(&msg)
 
@@ -38,37 +34,37 @@ func Send(w http.ResponseWriter, r *http.Request) {
 	if validateMsg != "" {
 		http.Error(w, validateMsg, http.StatusBadRequest)
 	}
-
-	// 수신자 폴더 찾기 (임시 경로)
-	_, findErr := findOrCreateDir(msg.Recipient, "go-http-txt-message\\message")
 	
-	if findErr != nil {
-		// msg.Content_date
-
-	}
-}
-
-func findOrCreateDir(recipient string, root string) (bool, error) {
-	// 임시 경로
-	cwd, err := os.Getwd()
-	if err != nil {
-		return false, fmt.Errorf("현재 작업 디렉터리 가져오기 실패: %v", err)
-	}
-	fullPath := filepath.Join(cwd, "..", "..", root, recipient)
-
-	_, err = os.Stat(fullPath)
-	if os.IsNotExist(err) { // 디렉터리가 없는 경우
-		log.Printf("생성할 경로 : %s", fullPath)
-		err = os.Mkdir(fullPath, 0775)
+	msgDir := os.Getenv("APP_MSG_DIR")
+	if msgDir == "" {
+		wd, err := os.Getwd()
 		if err != nil {
-			return false, fmt.Errorf("디렉토리 생성 중 오류 발생 : %v", err)
+			http.Error(w, "경로를 가져오는 데 실패했습니다", http.StatusInternalServerError)
+            return
 		}
-		return true, nil // 디렉터리 생성 완료
-	} else if err != nil {
-		return false, fmt.Errorf("디렉토리 상태 확인 오류 : %v", err)
+		msgDir = filepath.Join(wd, "message", msg.Recipient)
+	}
+	
+	// 수신자 디렉토리가 없으면 생성하고 메시지 파일 생성
+	err = os.MkdirAll(msgDir, os.ModePerm)
+	if err != nil {
+		http.Error(w, "수신자 디렉토리 생성 오류", http.StatusInternalServerError)
+		return
 	}
 
-	return true, nil // 디렉터리 이미 존재
+	// 메시지 파일 생성
+	now := time.Now()
+	filename := fmt.Sprintf("%s_%s.txt", msg.Title, now.Format("20060102"))
+	fullPath := filepath.Join(msgDir, filename)
+
+	err = os.WriteFile(fullPath, []byte(msg.Content), 0644)
+	if err != nil {
+		http.Error(w, "메시지 파일 생성 오류", http.StatusInternalServerError)
+		return 
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "메시지 전송 완료")
 }
 
 func validateRequest(m Message) string {
