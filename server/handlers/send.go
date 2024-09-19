@@ -43,6 +43,8 @@ func Send(w http.ResponseWriter, r *http.Request) {
             return
 		}
 		msgDir = filepath.Join(wd, "message", msg.Recipient)
+	} else {
+		msgDir = filepath.Join(msgDir, msg.Recipient)
 	}
 	
 	// 수신자 디렉토리가 없으면 생성하고 메시지 파일 생성
