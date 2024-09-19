@@ -59,7 +59,10 @@ func Send(w http.ResponseWriter, r *http.Request) {
 	filename := fmt.Sprintf("%s_%s.txt", msg.Title, now.Format("20060102"))
 	fullPath := filepath.Join(msgDir, filename)
 
-	err = os.WriteFile(fullPath, []byte(msg.Content), 0644)
+	contentWithSender := fmt.Sprintf("보낸 사람: %s\n\n%s", msg.Sender, msg.Content)
+
+
+	err = os.WriteFile(fullPath, []byte(contentWithSender), 0644)
 	if err != nil {
 		http.Error(w, "메시지 파일 생성 오류", http.StatusInternalServerError)
 		return 
