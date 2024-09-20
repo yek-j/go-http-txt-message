@@ -3,10 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"go-http-txt-message/server/utils"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -35,16 +37,11 @@ func Send(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, validateMsg, http.StatusBadRequest)
 	}
 	
-	msgDir := os.Getenv("APP_MSG_DIR")
-	if msgDir == "" {
-		wd, err := os.Getwd()
-		if err != nil {
-			http.Error(w, "경로를 가져오는 데 실패했습니다", http.StatusInternalServerError)
-            return
-		}
-		msgDir = filepath.Join(wd, "message", msg.Recipient)
-	} else {
-		msgDir = filepath.Join(msgDir, msg.Recipient)
+
+	msgDir, err := utils.GetDirPath(msg.Recipient)
+	if err != nil {
+		http.Error(w, "경로를 가져오는 데 실패했습니다", http.StatusInternalServerError)
+		return
 	}
 	
 	// 수신자 디렉토리가 없으면 생성하고 메시지 파일 생성
@@ -73,11 +70,11 @@ func Send(w http.ResponseWriter, r *http.Request) {
 }
 
 func validateRequest(m Message) string {
-	if len(m.Title) > 10 {
+	if len(strings.TrimSpace(m.Title)) > 10 {
 		return "제목은 10이하로만 작성할 수 있습니다."
 	}
 
-	if m.Recipient == "" {
+	if strings.TrimSpace(m.Recipient) == "" {
 		return "수신인 이름을 입력하세요."
 	}
 

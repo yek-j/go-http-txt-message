@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"go-http-txt-message/server/utils"
 	"log"
 	"net/http"
 	"os"
@@ -19,16 +20,10 @@ func List(w http.ResponseWriter, r *http.Request) {
 		return 
 	}
 
-	msgDir := os.Getenv("APP_MSG_DIR")
-	if msgDir == "" {
-		wd, err := os.Getwd()
-		if err != nil {
-			http.Error(w, "경로를 가져오는 데 실패했습니다.", http.StatusInternalServerError)
-			return 
-		}
-		msgDir = filepath.Join(wd, "message", username)
-	} else {
-		msgDir = filepath.Join(msgDir, username)
+	msgDir, err := utils.GetDirPath(username)
+	if err != nil {
+		http.Error(w, "경로를 가져오는 데 실패했습니다.", http.StatusInternalServerError)
+		return 
 	}
 
 	// 사용자 디렉토리가 있는지 확인
