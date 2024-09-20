@@ -47,7 +47,7 @@ func List(w http.ResponseWriter, r *http.Request) {
 		}
  	}
 
-	w.Header().Set("Context-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(messages);
     if err != nil {
         log.Printf("JSON 인코딩 에러: %v", err)
