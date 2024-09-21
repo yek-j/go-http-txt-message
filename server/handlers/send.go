@@ -35,6 +35,7 @@ func Send(w http.ResponseWriter, r *http.Request) {
 
 	if validateMsg != "" {
 		http.Error(w, validateMsg, http.StatusBadRequest)
+		return
 	}
 	
 
