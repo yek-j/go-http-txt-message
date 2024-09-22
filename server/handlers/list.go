@@ -20,17 +20,19 @@ func List(w http.ResponseWriter, r *http.Request) {
 		return 
 	}
 
+	// 사용자 디렉토리가 있는지 확인
+	userExist, _ := utils.IsDirExisting(username)
+	if  !userExist {
+		http.Error(w, "해당 사용자의 메시지는 존재하지 않습니다.", http.StatusNotFound)
+		return 
+	}
+
 	msgDir, err := utils.GetDirPath(username)
 	if err != nil {
 		http.Error(w, "경로를 가져오는 데 실패했습니다.", http.StatusInternalServerError)
 		return 
 	}
 
-	// 사용자 디렉토리가 있는지 확인
-	if _, err := os.Stat(msgDir); os.IsNotExist(err) {
-		http.Error(w, "해당 사용자의 메시지는 존재하지 않습니다.", http.StatusNotFound)
-		return 
-	}
 
 	// 디렉토리 읽기
 	files, err := os.ReadDir(msgDir)

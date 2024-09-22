@@ -24,19 +24,24 @@ func GetMessage(w http.ResponseWriter, r *http.Request) {
 		title += ".txt"
 	}
 
+	userExist, _ := utils.IsDirExisting(username)
+	if !userExist {
+		http.Error(w, "사용자가 존재하지 않습니다.", http.StatusBadRequest)
+		return
+	}
+
 	filePath, err := utils.GetFilePath(username, title)
 	if err != nil {
 		http.Error(w, "경로를 가져오는데 실패했습니다.", http.StatusInternalServerError)
 		return 
 	}
-
-
+	
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		http.Error(w, "메시지 내용을 읽는데 실패했습니다.", http.StatusInternalServerError)
 		return 
 	}
-
+	
 	// 응답 설정
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Write(content)

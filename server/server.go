@@ -7,11 +7,17 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/send", handlers.Send)
-	http.HandleFunc("/list/", handlers.List)
-	http.HandleFunc("/message", handlers.GetMessage)
+	mux := http.NewServeMux()
 
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	mux.HandleFunc("/send", handlers.Send)
+	mux.HandleFunc("/list/", handlers.List)
+	mux.HandleFunc("/message", handlers.GetMessage)
+
+	server := &http.Server{
+		Addr: ":8080",
+		Handler: mux,
+	}
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal("ListenAndServe Error : ", err)
 	}
 }
