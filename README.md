@@ -49,7 +49,7 @@
 ### 3. Get Message API
 
 #### 엔드포인트
-`GET /message?username={username}&title={message_title}
+`GET /message?username={username}&title={message_title}`
 
 #### 설명
 이 API는 특정 사용자의 특정 메시지 내용을 반환한다.
@@ -77,6 +77,25 @@
 ## 설정
 - `APP_MSG_DIR` 환경 변수: 메시지 저장 디렉토리 지정 (설정되지 않은 경우 기본 경로 사용)
 
-## 향후 개선 방향
-1. 서버 테스트 구현
-2. 클라이언트 구현
+## 클라이언트
+클라이언트는 명령줄 인터페이스(CLI)를 통해 서버와 상호 작용 한다. 다음과 같은 명령어를 지원한다.
+- `send` : 새 메시지 전송
+- `list` : 특정 사용자의 메시지 목록 조회
+- `message` : 특정 사용자의 특정 메시지 내용 조회
+
+### 클라이언트 전송 예시
+1. 메시지 전송:
+   ```
+   ./client send
+   ```
+   프롬프트에 따라 수신자, 발신자, 제목, 내용을 입력합니다.
+
+2. 메시지 목록 조회:
+   ```
+   ./client list -u username
+   ```
+
+3. 특정 메시지 조회:
+   ```
+   ./client message -u username -t "message title"
+   ```
